@@ -1,0 +1,16 @@
+<launch>
+
+  <arg name="mav_name" default="firefly"/>
+  <arg name="run_sim"  default="true"/>
+  <arg name="exercise" default="$(find rotors_exercise)/resource/exercise1.txt"/>
+
+  <group if="$(arg run_sim)">
+ 	 <include file="$(find rotors_exercise)/launch/mav_gazebo_attitude_controller.launch"/> 
+  </group>
+
+  <group ns="$(arg mav_name)">
+    <node name="hovering_example" pkg="rotors_gazebo" type="hovering_example" output="screen"/>
+
+    <node name="waypoint_publisher_file" pkg="rotors_gazebo" type="waypoint_publisher_file" output="screen" args="$(arg exercise)"/>
+  </group>
+</launch>

@@ -1,0 +1,22 @@
+\subsubsection usage Usage
+\verbatim
+<node name="rotors_exercise" pkg="rotors_exercise" type="rotors_exercise">
+  <param name="x_kp" type="double" value="0.8" />
+  <param name="x_ki" type="double" value="0.85" />
+  <param name="x_kd" type="double" value="0.06" />
+  <param name="y_kp" type="double" value="0.8" />
+  <param name="y_ki" type="double" value="1.0" />
+  <param name="y_kd" type="double" value="0.05" />
+  <param name="z_kp" type="double" value="6.0" />
+  <param name="z_ki" type="double" value="4.0" />
+  <param name="z_kd" type="double" value="0.5" />
+  <param name="yaw_kp" type="double" value="8.0" />
+  <param name="yaw_ki" type="double" value="8.0" />
+  <param name="yaw_kd" type="double" value="4.0" />
+  <param name="roll_limit" type="double" value="0.2" />
+  <param name="pitch_limit" type="double" value="0.2" />
+  <param name="thrust_limit" type="double" value="10.0" />
+  <param name="yaw_limit" type="double" value="2.0" />
+</node>
+\endverbatim
+

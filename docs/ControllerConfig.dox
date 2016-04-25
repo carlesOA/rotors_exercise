@@ -1,0 +1,21 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~x_kp" : \b [double] x_kp min: 0.0, default: 0.8, max: 5.0
+- \b "~x_ki" : \b [double] x_ki min: 0.0, default: 0.85, max: 5.0
+- \b "~x_kd" : \b [double] x_kd min: 0.0, default: 0.06, max: 5.0
+- \b "~y_kp" : \b [double] y_kp min: 0.0, default: 0.8, max: 5.0
+- \b "~y_ki" : \b [double] y_ki min: 0.0, default: 1.0, max: 5.0
+- \b "~y_kd" : \b [double] y_kd min: 0.0, default: 0.05, max: 5.0
+- \b "~z_kp" : \b [double] z_kp min: 0.0, default: 6.0, max: 10.0
+- \b "~z_ki" : \b [double] z_ki min: 0.0, default: 4.0, max: 10.0
+- \b "~z_kd" : \b [double] z_kd min: 0.0, default: 0.5, max: 5.0
+- \b "~yaw_kp" : \b [double] yaw_kp min: 0.0, default: 8.0, max: 10.0
+- \b "~yaw_ki" : \b [double] yaw_ki min: 0.0, default: 8.0, max: 10.0
+- \b "~yaw_kd" : \b [double] yaw_kd min: 0.0, default: 4.0, max: 10.0
+- \b "~roll_limit" : \b [double] roll_limit min: 0.0, default: 0.2, max: 5.0
+- \b "~pitch_limit" : \b [double] pitch_limit min: 0.0, default: 0.2, max: 5.0
+- \b "~thrust_limit" : \b [double] thrust_limit min: 0.0, default: 10.0, max: 5.0
+- \b "~yaw_limit" : \b [double] yaw_limit min: 0.0, default: 2.0, max: 5.0
+

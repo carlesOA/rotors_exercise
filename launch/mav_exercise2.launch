@@ -1,0 +1,13 @@
+<launch>
+
+  <arg name="run_sim"  default="true"/>
+  <arg name="exercise" default="$(find rotors_exercise)/resource/exercise2.txt"/>
+  <arg name="mav_name" default="firefly"/>
+
+  <include file="$(find rotors_exercise)/launch/mav_exercise1.launch">
+    <arg name="run_sim" value="$(arg run_sim)"/> 
+    <arg name="mav_name" value="$(arg mav_name)"/> 
+    <arg name="exercise" value="$(arg exercise)"/> 
+  </include>
+
+</launch>
