@@ -37,7 +37,7 @@
     parent_frame_id="world"
     child_frame_id="${namespace}/fake_gps"
     mass_odometry_sensor="0.00001"
-    measurement_divisor="10"
+    measurement_divisor="100"
     measurement_delay="0"
     unknown_delay="0.0"
     noise_normal_position="1 1 1"

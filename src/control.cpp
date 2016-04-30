@@ -54,7 +54,7 @@ tf::Vector3		body_accel;
 //PID variables
 Eigen::Vector4d error, error_previous,I,i_limits(30, 30, 30, 30), deltaE, P, I;
 double now, late, delta_time;
-//double latest_yaw = 0.0;
+double late_yaw = 0.0;
 
 
 void imuCallback(const sensor_msgs::ImuConstPtr& msg)
@@ -266,10 +266,16 @@ int main(int argc, char** argv)
 
             //Calcular error
             error[0] = setpoint_pos[0] - latest_pose.pose.position.x;
+            error[1] = setpoint_pos[1] - latest_pose.pose.position.y;
+            error[2] = setpoint_pos[2] - latest_pose.pose.position.z;
+            error[3] = setpoint_yaw - late_yaw;
 
-            //Per yaw_rate s'ha de fer:
-
-              //  wrap around for yaw. Si es més gran que 180º l'hi restes 360º
+            if(error[3] > PI){
+                            error[3] = -(error[3] - 2*PI);
+                        }else if(error[3] < -PI){
+                            error[3] = -(error[3] + 2*PI);
+                        }
+            late_yaw = setpoint_yaw;
 
             //Proporcinal
             P[0] = kp * error[0];

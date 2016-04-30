@@ -38,18 +38,6 @@ class EstimatorNode {
   EstimatorNode();
   ~EstimatorNode();
 
-  Eigen::MatrixXd F; //(6,6)
-  Eigen::Matrix3d R;
-  Eigen::MatrixXd Q; //(6,6)
-  Eigen::MatrixXd P; //(6,6)
-  Eigen::MatrixXd G; //(6,3)
-  Eigen::MatrixXd H; //(3,6)
-  Eigen::MatrixXd K; //(6,3)
-
-  Eigen::VectorXd x;  //(6,6)
-  Eigen::RowVector3d u;
-  Eigen::Vector3d z;
-
 
   void Publish();
 

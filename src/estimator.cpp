@@ -19,6 +19,83 @@
  */
 
 #include "estimator.h"
+int n = 6;
+int p = 3;
+int m = 3;
+
+Eigen::MatrixXd F(n,n); //(6,6)
+Eigen::MatrixXd R(m,m);
+Eigen::MatrixXd Q(n,n); //(6,6)
+Eigen::MatrixXd P_hat(n,n); //(6,6)
+Eigen::MatrixXd G(n,p); //(6,3)
+Eigen::MatrixXd H(m,n); //(3,6)
+Eigen::MatrixXd K(n,m); //(6,3)
+Eigen::MatrixXd apriori_P;
+Eigen::MatrixXd aposteriori_P;
+
+Eigen::VectorXd x_hat(n);
+Eigen::VectorXd u(p);
+Eigen::VectorXd z(m);
+Eigen::VectorXd apriori_x(n);
+Eigen::VectorXd aposteriori_x(n);
+Eigen::VectorXd apriori_z(m);
+
+
+ROS_INFO ("Initial conditions");
+
+apriori_x << 0,0,0,0,0,0;
+x_hat = apriori_x;
+
+H << 1, 0, 0, 0, 0, 0,
+     0, 1, 0, 0, 0, 0,
+     0, 0, 1, 0, 0, 0;
+
+const double sigma_z = 0.001;
+
+R << sigma_z, 0, 0,
+     0, sigma_z, 0,
+     0, 0, sigma_z;
+
+const double sigma_x = 0.001;
+
+apriori_P << sigma_x, 0, 0, 0, 0, 0,
+     0, sigma_x, 0, 0, 0, 0,
+     0, 0, sigma_x, 0, 0, 0,
+     0, 0, 0, sigma_x, 0, 0,
+     0, 0, 0, 0, sigma_x, 0,
+     0, 0, 0, 0, 0, sigma_x;
+
+P_hat = apriori_P;
+
+
+double dt_2 = dt*dt;
+double dt_3 = dt_2*dt;
+
+F << 1, 0, 0, dt, 0, 0,
+     0, 1, 0, 0, dt, 0,
+     0, 0, 1, 0, 0, dt,
+     0, 0, 0, 1, 0, 0,
+     0, 0, 0, 0, 1, 0,
+     0, 0, 0, 0, 0, 1;
+
+G << dt_2/2, 0, 0,
+     0, dt_2/2, 0,
+     0, 0, dt_2/2,
+     dt, 0, 0,
+     0, dt, 0,
+     0, 0, dt;
+
+double float sigma_u = 0.5;
+
+Q << dt_3/2, 0, 0, dt_2/2, 0, 0,
+     0, dt_3/2, 0, 0, dt_2/2, 0,
+     0, 0, dt_3/2, 0, 0, dt_2/2,
+     dt_2/2, 0, 0, dt_2/2, 0, 0,
+     0, dt_2/2, 0, 0, dt_2/2, 0,
+     0, 0, dt_2/2, 0, 0, dt_2/2;
+
+Q = sigma_u*Q;
+
 
 EstimatorNode::EstimatorNode() {
 
@@ -65,15 +142,6 @@ void EstimatorNode::ImuCallback(
   msgPose_.header.seq = imu_msg->header.seq;
   msgPose_.header.frame_id =imu_msg->header.frame_id;
 
-
-  F.resize(6,6);
-  Q.resize(6,6);
-  P.resize(6,6);
-  G.resize(6,3);
-  H.resize(3,6);
-  K.resize(6,3);
-
-  x.resize(6,1);
 }
 
 void EstimatorNode::TimedCallback(
