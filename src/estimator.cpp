@@ -19,6 +19,7 @@
  */
 
 #include "estimator.h"
+#include <tf_conversions/tf_eigen.h>
 int n = 6;
 int p = 3;
 int m = 3;
@@ -29,6 +30,7 @@ Eigen::MatrixXd Q(n,n); //(6,6)
 Eigen::MatrixXd P_hat(n,n); //(6,6)
 Eigen::MatrixXd G(n,p); //(6,3)
 Eigen::MatrixXd H(m,n); //(3,6)
+Eigen::MatrixXd Ht(n,m); //(6,3)
 Eigen::MatrixXd K(n,m); //(6,3)
 Eigen::MatrixXd apriori_P;
 Eigen::MatrixXd aposteriori_P;
@@ -40,61 +42,8 @@ Eigen::VectorXd apriori_x(n);
 Eigen::VectorXd aposteriori_x(n);
 Eigen::VectorXd apriori_z(m);
 
-
-ROS_INFO ("Initial conditions");
-
-apriori_x << 0,0,0,0,0,0;
-x_hat = apriori_x;
-
-H << 1, 0, 0, 0, 0, 0,
-     0, 1, 0, 0, 0, 0,
-     0, 0, 1, 0, 0, 0;
-
-const double sigma_z = 0.001;
-
-R << sigma_z, 0, 0,
-     0, sigma_z, 0,
-     0, 0, sigma_z;
-
 const double sigma_x = 0.001;
-
-apriori_P << sigma_x, 0, 0, 0, 0, 0,
-     0, sigma_x, 0, 0, 0, 0,
-     0, 0, sigma_x, 0, 0, 0,
-     0, 0, 0, sigma_x, 0, 0,
-     0, 0, 0, 0, sigma_x, 0,
-     0, 0, 0, 0, 0, sigma_x;
-
-P_hat = apriori_P;
-
-
-double dt_2 = dt*dt;
-double dt_3 = dt_2*dt;
-
-F << 1, 0, 0, dt, 0, 0,
-     0, 1, 0, 0, dt, 0,
-     0, 0, 1, 0, 0, dt,
-     0, 0, 0, 1, 0, 0,
-     0, 0, 0, 0, 1, 0,
-     0, 0, 0, 0, 0, 1;
-
-G << dt_2/2, 0, 0,
-     0, dt_2/2, 0,
-     0, 0, dt_2/2,
-     dt, 0, 0,
-     0, dt, 0,
-     0, 0, dt;
-
-double float sigma_u = 0.5;
-
-Q << dt_3/2, 0, 0, dt_2/2, 0, 0,
-     0, dt_3/2, 0, 0, dt_2/2, 0,
-     0, 0, dt_3/2, 0, 0, dt_2/2,
-     dt_2/2, 0, 0, dt_2/2, 0, 0,
-     0, dt_2/2, 0, 0, dt_2/2, 0,
-     0, 0, dt_2/2, 0, 0, dt_2/2;
-
-Q = sigma_u*Q;
+const float sigma_u = 0.5;
 
 
 EstimatorNode::EstimatorNode() {
@@ -109,6 +58,28 @@ EstimatorNode::EstimatorNode() {
   pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/firefly/pose", 1);
 
   timer_ = nh.createTimer(ros::Duration(0.1), &EstimatorNode::TimedCallback, this);
+
+  H << 1, 0, 0, 0, 0, 0,
+       0, 1, 0, 0, 0, 0,
+       0, 0, 1, 0, 0, 0;
+
+  Ht = H.transpose();
+
+  const double sigma_z = 0.001;
+
+  R << sigma_z, 0, 0,
+       0, sigma_z, 0,
+       0, 0, sigma_z;
+
+  apriori_P << sigma_x, 0, 0, 0, 0, 0,
+       0, sigma_x, 0, 0, 0, 0,
+       0, 0, sigma_x, 0, 0, 0,
+       0, 0, 0, sigma_x, 0, 0,
+       0, 0, 0, 0, sigma_x, 0,
+       0, 0, 0, 0, 0, sigma_x;
+
+  update(0.0);
+
 }
 
 EstimatorNode::~EstimatorNode() { }
@@ -129,7 +100,10 @@ void EstimatorNode::PoseCallback(
   msgPose_.header.seq = pose_msg->header.seq;
   msgPose_.header.frame_id =pose_msg->header.frame_id;
 
-
+ //Correction
+  K = P_hat * Ht * (H*P_hat*Ht + R).inverse();
+  aposteriori_x = x_hat + K*(apriori_z - z);
+  apriori_P = P_hat - K*H*P_hat;
 
 }
 
@@ -142,6 +116,15 @@ void EstimatorNode::ImuCallback(
   msgPose_.header.seq = imu_msg->header.seq;
   msgPose_.header.frame_id =imu_msg->header.frame_id;
 
+  apriori_x << 0,0,0,0,0,0;
+
+  //PREDICTION
+   apriori_x = F * x_hat + G;
+   apriori_P = F * P_hat * F.transpose() +  Q;
+   z = H * apriori_x;
+   x_hat = apriori_x;
+   P_hat = apriori_P;
+
 }
 
 void EstimatorNode::TimedCallback(
@@ -150,6 +133,36 @@ void EstimatorNode::TimedCallback(
    Publish();
 }
 
+void EstimatorNode::update(double time){
+
+    double dt = time;
+
+    double dt_2 = dt*dt;
+    double dt_3 = dt_2*dt;
+
+    F << 1, 0, 0, dt, 0, 0,
+         0, 1, 0, 0, dt, 0,
+         0, 0, 1, 0, 0, dt,
+         0, 0, 0, 1, 0, 0,
+         0, 0, 0, 0, 1, 0,
+         0, 0, 0, 0, 0, 1;
+
+    G << dt_2/2, 0, 0,
+         0, dt_2/2, 0,
+         0, 0, dt_2/2,
+         dt, 0, 0,
+         0, dt, 0,
+         0, 0, dt;
+
+    Q << dt_3/2, 0, 0, dt_2/2, 0, 0,
+         0, dt_3/2, 0, 0, dt_2/2, 0,
+         0, 0, dt_3/2, 0, 0, dt_2/2,
+         dt_2/2, 0, 0, dt_2/2, 0, 0,
+         0, dt_2/2, 0, 0, dt_2/2, 0,
+         0, 0, dt_2/2, 0, 0, dt_2/2;
+
+    Q = sigma_u*Q;
+}
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "estimator");

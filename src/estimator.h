@@ -74,6 +74,8 @@ class EstimatorNode {
 
   void TimedCallback(
       const ros::TimerEvent& e);
+
+  void update(double time);
 };
 
 #endif // ESTIMATOR_NODE_H
