@@ -44,7 +44,7 @@ Eigen::VectorXd apriori_z(m);
 
 const double sigma_x = 0.001;
 const float sigma_u = 0.5;
-
+const double sigma_z = 0.001;
 
 EstimatorNode::EstimatorNode() {
 
@@ -59,13 +59,15 @@ EstimatorNode::EstimatorNode() {
 
   timer_ = nh.createTimer(ros::Duration(0.1), &EstimatorNode::TimedCallback, this);
 
+  nh.getParam("sigma_x", sigma_x);
+  nh.getParam("sigma_z", sigma_z);
+  nh.getParam("sigma_u", sigma_u);
+
   H << 1, 0, 0, 0, 0, 0,
        0, 1, 0, 0, 0, 0,
        0, 0, 1, 0, 0, 0;
 
   Ht = H.transpose();
-
-  const double sigma_z = 0.001;
 
   R << sigma_z, 0, 0,
        0, sigma_z, 0,
@@ -78,7 +80,7 @@ EstimatorNode::EstimatorNode() {
        0, 0, 0, 0, sigma_x, 0,
        0, 0, 0, 0, 0, sigma_x;
 
-  update(0.0);
+  update(timer_);
 
 }
 
